@@ -7,9 +7,9 @@
   ],
   "profile": "",
   "region": "",
-  "configuration": "Release",
-  "framework": "netcoreapp3.1",
-  "s3-prefix": "Kaala.Timesheet.Api/",
+  "configuration": "Debug",
+  "s3-prefix": "timesheet-api/",
   "template": "serverless.template",
-  "template-parameters": "ShouldCreateBucket=true;BucketName="
+  "template-parameters": "",
+  "docker-host-build-output-dir": "./bin/Debug/net5.0/linux-x64/publish"
 }

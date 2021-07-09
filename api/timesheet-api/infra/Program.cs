@@ -1,7 +1,15 @@
-﻿using System.Threading.Tasks;
-using Pulumi;
+﻿using Amazon.CDK;
 
-class Program
+namespace TimesheetApiInfra
 {
-    static Task<int> Main() => Deployment.RunAsync<MyStack>();
+    sealed class Program
+    {
+        public static void Main(string[] args)
+        {
+            var app = new App();
+            new TimesheetApiInfraStack(app, "TimesheetApi");
+
+            app.Synth();
+        }
+    }
 }
