@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "Test:TimesheetApi",
+            "invokeTarget": {
+                "target": "code",
+                "projectRoot": "${workspaceFolder}/test",
+                "lambdaHandler": "TimesheetApi.Tests::TimesheetApi.LambdaTest::TetGetMethod"
+            },
+            "lambda": {
+                "runtime": "dotnetcore3.1",
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/infra/bin/Debug/net5.0/TimesheetApiInfra.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/infra",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}

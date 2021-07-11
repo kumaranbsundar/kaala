@@ -9,7 +9,7 @@ RUN apt-get update && apt-get -y install zip
 RUN mkdir $FUNCTION_DIR
 WORKDIR $FUNCTION_DIR
 RUN dotnet tool install -g Amazon.Lambda.Tools
-COPY Lambda.cs TimesheetApi.csproj $FUNCTION_DIR/
+COPY . $FUNCTION_DIR/
 
 # Build and Copy artifacts depending on build mode.
 RUN mkdir -p build_artifacts

@@ -10,17 +10,20 @@ namespace TimesheetApiInfra
         {
             // Deploy Lambda
             var dockerImageCode = DockerImageCode.FromImageAsset("../src");
-            var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps{
+            var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
+            {
                 FunctionName = "TimesheetApi",
                 Code = dockerImageCode,
-                Description = "Timesheet API",                
+                Description = "Timesheet API",
                 Timeout = Duration.Seconds(10)
             });
 
             // DynamoDb Table
-            var table = new Table(this, "Timesheet", new TableProps {
+            var table = new Table(this, "Timesheet", new TableProps
+            {
                 TableName = "Timesheet",
-                PartitionKey = new Attribute {
+                PartitionKey = new Attribute
+                {
                     Name = "Id",
                     Type = AttributeType.STRING
                 }
