@@ -5,6 +5,7 @@ using Amazon.Lambda.TestUtilities;
 using Amazon.Lambda.APIGatewayEvents;
 using System.Text.Json;
 using System.IO;
+using System.Collections.Generic;
 
 namespace TimesheetApi
 {
@@ -15,7 +16,11 @@ namespace TimesheetApi
         {
             var lambda = new Lambda();
             var request = new APIGatewayProxyRequest{
-                HttpMethod = "Get"
+                HttpMethod = "Get",
+                PathParameters = new Dictionary<string, string> { 
+                    { "UserId", "Test" },
+                    { "Id", "1" }  
+                } 
             };
             
             //using FileStream openStream = File.OpenRead("event.json");
@@ -27,7 +32,7 @@ namespace TimesheetApi
             Assert.Equal(200, response.StatusCode);
 
             var timesheet = JsonSerializer.Deserialize<Timesheet>(response.Body);
-            Assert.Equal(timesheet.Id, "Test_2");
+            Assert.Equal(timesheet.Id, "Test_1");
         }
     }
 }

@@ -4,16 +4,41 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
-            "name": "Test:TimesheetApi",
+            "name": "src:TimesheetApi::TimesheetApi.Lambda::Handler (dotnetcore3.1)",
             "invokeTarget": {
                 "target": "code",
-                "projectRoot": "${workspaceFolder}/test",
-                "lambdaHandler": "TimesheetApi.Tests::TimesheetApi.LambdaTest::TetGetMethod"
+                "projectRoot": "${workspaceFolder}/src",
+                "lambdaHandler": "TimesheetApi::TimesheetApi.Lambda::Handler"
             },
             "lambda": {
                 "runtime": "dotnetcore3.1",
                 "payload": {},
                 "environmentVariables": {}
+            },
+            "aws": {
+                "region": "us-east-1",
+                "credentials": "profile:kaaladev"
+            }            
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "Test:TimesheetApi",
+            "invokeTarget": {
+                "target": "code",
+                "projectRoot": "${workspaceFolder}/test",
+                "lambdaHandler": "TimesheetApi.Tests::TimesheetApi.LambdaTest::TetGetMethod1"
+            },
+            "lambda": {
+                "runtime": "dotnetcore3.1",
+                "payload": {},
+                "environmentVariables": {
+                    "AWS_PROFILE": "kaaladev"
+                }
+            },
+            "aws": {
+                "region": "us-east-1",
+                "credentials": "profile:kaaladev"
             }
         },
         {
@@ -30,7 +55,8 @@
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
-            "request": "attach"
+            "request": "attach",
+            "justMyCode": false
         }
     ]
 }

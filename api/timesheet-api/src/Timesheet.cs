@@ -5,11 +5,13 @@ using Amazon.DynamoDBv2.DataModel;
 
 namespace TimesheetApi
 {
+    [DynamoDBTable("Timesheet")]
     public class Timesheet
     {
+        [DynamoDBHashKey]
         public string Id { get; set; }
         public int WeekId { get; set; }
-        public IEnumerable<TimesheetDay> WeekSheet { get; set; }
+        //public IEnumerable<TimesheetDay> WeekSheet { get; set; }
     }
 
     public class TimesheetDay
