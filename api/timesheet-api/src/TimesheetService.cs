@@ -32,11 +32,6 @@ namespace TimesheetApi
         {
             return await this.dynamoDBContext.LoadAsync<Timesheet>($"{userId}_{weekId}");
 
-            // return (await this.dynamoDBContext
-            //         .QueryAsync<Timesheet>(hashKey)
-            //         .GetRemainingAsync()
-            //         ).ToList().FirstOrDefault();
-
             // return new Timesheet
             // {
             //     Id = "Test_1",

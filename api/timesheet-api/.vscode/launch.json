@@ -4,22 +4,20 @@
         {
             "type": "aws-sam",
             "request": "direct-invoke",
-            "name": "src:TimesheetApi::TimesheetApi.Lambda::Handler (dotnetcore3.1)",
+            "name": "TimesheetApi",
             "invokeTarget": {
-                "target": "code",
-                "projectRoot": "${workspaceFolder}/src",
-                "lambdaHandler": "TimesheetApi::TimesheetApi.Lambda::Handler"
+                "target": "template",
+                "templatePath": "${workspaceFolder}/template.yaml",
+                "logicalId": "TimesheetFunction"
             },
             "lambda": {
-                "runtime": "dotnetcore3.1",
-                "payload": {},
-                "environmentVariables": {}
-            },
-            "aws": {
-                "region": "us-east-1",
-                "credentials": "profile:kaaladev"
-            }            
-        },
+                "payload": {
+                    "path": "${workspaceFolder}/test/events/event.json"        
+                },
+                "environmentVariables": {},
+                "runtime": "dotnetcore3.1"
+            }
+        },    
         {
             "type": "aws-sam",
             "request": "direct-invoke",
@@ -32,9 +30,7 @@
             "lambda": {
                 "runtime": "dotnetcore3.1",
                 "payload": {},
-                "environmentVariables": {
-                    "AWS_PROFILE": "kaaladev"
-                }
+                "environmentVariables": {}
             },
             "aws": {
                 "region": "us-east-1",

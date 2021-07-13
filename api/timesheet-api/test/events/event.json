@@ -1,6 +1,6 @@
 {
     "body": "{\"message\": \"hello world\"}",
-    "resource": "/{proxy+}",
+    "resource": "/{UserId}/{Id}",
     "path": "/path/to/resource",
     "httpMethod": "GET",
     "isBase64Encoded": false,
@@ -8,7 +8,8 @@
       "foo": "bar"
     },
     "pathParameters": {
-      "proxy": "/path/to/resource"
+      "UserId": "Test",
+      "Id": "1"      
     },
     "stageVariables": {
       "baz": "qux"

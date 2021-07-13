@@ -1,6 +1,7 @@
 using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.DynamoDB;
+using Amazon.CDK.AWS.IAM;
 
 namespace TimesheetApiInfra
 {
@@ -28,6 +29,13 @@ namespace TimesheetApiInfra
                     Type = AttributeType.STRING
                 }
             });
+
+            // Assign permission to lambda to access the Timesheet Table
+            lambda.AddToRolePolicy(new PolicyStatement(new PolicyStatementProps
+            {
+                Actions = new[] { "dynamodb:*" },
+                Resources = new[] { table.TableArn }
+            }));
         }
     }
 }
