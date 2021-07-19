@@ -1,7 +1,4 @@
 using Amazon.CDK;
-using Amazon.CDK.AWS.Lambda;
-using Amazon.CDK.AWS.DynamoDB;
-using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.Pipelines;
 using Amazon.CDK.AWS.CodePipeline;
 using Amazon.CDK.AWS.CodePipeline.Actions;
@@ -48,6 +45,8 @@ namespace TimesheetApiInfra
                     SynthCommand = "cdk synth"
                 })
             });
+
+            pipeline.AddApplicationStage(new SolutionStage(this, "Development"));
         }
     }
 }
