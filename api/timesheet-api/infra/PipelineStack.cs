@@ -41,10 +41,11 @@ namespace TimesheetApiInfra
                     Environment = new BuildEnvironment {
                         BuildImage = LinuxBuildImage.STANDARD_5_0
                     },
+                    Subdirectory = "api/timesheet-api/infra",
                     SourceArtifact = sourceArtifact,
                     CloudAssemblyArtifact = cloudAssemblyArtifact,
                     InstallCommands = new [] {"npm install -g aws-cdk"},
-                    SynthCommand = "cd api/timesheet-api/infra && cdk synth"
+                    SynthCommand = "cdk synth"
                 })
             });
         }
