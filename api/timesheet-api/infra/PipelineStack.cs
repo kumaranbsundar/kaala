@@ -46,7 +46,13 @@ namespace TimesheetApiInfra
                 })
             });
 
-            pipeline.AddApplicationStage(new SolutionStage(this, "Development"));
+            var devStage = pipeline.AddApplicationStage(new SolutionStage(this, "Development"));
+            // devStage.AddActions(new ShellScriptAction(new ShellScriptActionProps {
+            //     ActionName = "Test Lamabda Function",
+            //     Commands = new[] {
+            //         ""
+            //     }
+            // }))
         }
     }
 }

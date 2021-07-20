@@ -27,6 +27,11 @@ namespace TimesheetApiInfra
                 {
                     Name = "Id",
                     Type = AttributeType.STRING
+                },
+                SortKey = new Attribute
+                {
+                    Name = "Day",
+                    Type = AttributeType.STRING
                 }
             });
 
