@@ -28,7 +28,6 @@ namespace TimesheetApi
             );
         }
 
-
         /// <summary>
         /// A Lambda function to respond to HTTP methods from API Gateway
         /// </summary>
@@ -37,20 +36,24 @@ namespace TimesheetApi
         public async Task<APIGatewayProxyResponse> Handler(APIGatewayProxyRequest request, ILambdaContext context)
         {
             timesheetService.Logger = context.Logger;
+            var userId = request.PathParameters["UserId"];
+            var weekId = request.PathParameters["Id"];
 
-            Timesheet timesheet = null;
+            string response = null;
             switch (request.HttpMethod.ToUpper())
             {
                 case "GET":
-                    timesheet = await timesheetService.Get(
-                        request.PathParameters["UserId"],
-                        Int32.Parse(request.PathParameters["Id"]));
+                    response = await timesheetService.Get(userId, weekId);
+                    break;
+                case "POST":
+                    await timesheetService.Post(userId, weekId, request.Body);
+                    response = string.Empty;
                     break;
                 default:
                     break;
             }
 
-            if (timesheet == null)
+            if (response == null)
             {
                 return new APIGatewayProxyResponse
                 {
@@ -61,7 +64,7 @@ namespace TimesheetApi
             return new APIGatewayProxyResponse
             {
                 StatusCode = (int)HttpStatusCode.OK,
-                Body = JsonSerializer.Serialize<Timesheet>(timesheet),
+                Body = response,
                 Headers = new Dictionary<string, string> { { "Content-Type", "text/json" } }
             };
         }

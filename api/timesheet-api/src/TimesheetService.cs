@@ -1,22 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.Lambda.Core;
 
 namespace TimesheetApi
 {
-    public interface ITimesheetService
-    {
-        Task<Timesheet> Get(string userId, int weekId);
-
-        public ILambdaLogger Logger { get; set; }
-    }
-
     internal sealed class TimesheetService : ITimesheetService
     {
         private readonly IDynamoDBContext dynamoDBContext;
@@ -28,18 +18,29 @@ namespace TimesheetApi
 
         public ILambdaLogger Logger { get; set; }
 
-        public async Task<Timesheet> Get(string userId, int weekId)
+        public async Task<string> Get(string userId, string weekId)
         {
-            return await this.dynamoDBContext.LoadAsync<Timesheet>($"{userId}_{weekId}");
+            var dailySheets = await this.dynamoDBContext
+                .QueryAsync<Timesheet>($"{userId}_{weekId}")
+                .GetRemainingAsync();
 
-            // return new Timesheet
-            // {
-            //     Id = "Test_1",
-            //     WeekId = 1
-            //     // WeekSheet = new List<TimesheetDay> {
-            //     //     {new TimesheetDay { Day = DateTime.Now, Hours = 10, Description = "Test Desc" }}
-            //     // }
-            // };
+            return dailySheets == null ? null : JsonSerializer.Serialize(dailySheets);
+        }
+
+        public async Task Post(string userId, string weekId, string httpBody)
+        {
+            var dailySheets = JsonSerializer.Deserialize<IEnumerable<Timesheet>>(httpBody);
+
+            var batch = this.dynamoDBContext.CreateBatchWrite<Timesheet>();
+            batch.AddPutItems(dailySheets.Select(ds => new Timesheet
+            {
+                Day = ds.Day,
+                Hours = ds.Hours,
+                Description = ds.Description,
+                Id = $"{userId}_{weekId}"
+            }));
+            
+            await batch.ExecuteAsync();
         }
     }
 
