@@ -16,7 +16,7 @@ namespace TimesheetApiInfra
                 FunctionName = "TimesheetApi",
                 Code = dockerImageCode,
                 Description = "Timesheet API",
-                Timeout = Duration.Seconds(10)
+                Timeout = Duration.Seconds(10),
             });
 
             // DynamoDb Table

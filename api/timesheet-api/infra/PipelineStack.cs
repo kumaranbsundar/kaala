@@ -12,19 +12,21 @@ namespace TimesheetApiInfra
         {
             var sourceArtifact = new Artifact_();
             var cloudAssemblyArtifact = new Artifact_();
-            
-            var pipeline = new CdkPipeline(this, "TimesheetApiPipeline", new CdkPipelineProps {
+
+            var pipeline = new CdkPipeline(this, "TimesheetApiPipeline", new CdkPipelineProps
+            {
                 PipelineName = "TimesheetApiPipeline",
                 CloudAssemblyArtifact = cloudAssemblyArtifact,
-                SourceAction = new CodeStarConnectionsSourceAction(new CodeStarConnectionsSourceActionProps {
+                SourceAction = new CodeStarConnectionsSourceAction(new CodeStarConnectionsSourceActionProps
+                {
                     ActionName = "Github",
                     Branch = "main",
                     Output = sourceArtifact,
                     Owner = "kumaranbsundar",
                     Repo = "kaala",
                     TriggerOnPush = true,
-                    ConnectionArn = "arn:aws:codestar-connections:us-east-1:324668897075:connection/fb96c903-1567-4ea4-8b9f-a0b9b17f80cc"
-                }),                
+                    ConnectionArn = "arn:aws:codestar-connections:us-east-1:055117415094:connection/0f659edf-6b6f-4277-9f62-bdcb0ac08d99"
+                }),
                 // SourceAction = new GitHubSourceAction(new GitHubSourceActionProps {
                 //     ActionName = "Github",
                 //     Branch = "main",
@@ -34,19 +36,25 @@ namespace TimesheetApiInfra
                 //     Owner = "kumaranbsundar",
                 //     Repo = "kaala"
                 // }),
-                SynthAction = new SimpleSynthAction(new SimpleSynthActionProps {
-                    Environment = new BuildEnvironment {
+                SynthAction = new SimpleSynthAction(new SimpleSynthActionProps
+                {
+                    Environment = new BuildEnvironment
+                    {
                         BuildImage = LinuxBuildImage.STANDARD_5_0
                     },
                     Subdirectory = "api/timesheet-api/infra",
                     SourceArtifact = sourceArtifact,
                     CloudAssemblyArtifact = cloudAssemblyArtifact,
-                    InstallCommands = new [] {"npm install -g aws-cdk"},
+                    InstallCommands = new[] { "npm install -g aws-cdk" },
                     SynthCommand = "cdk synth"
                 })
             });
 
-            var devStage = pipeline.AddApplicationStage(new SolutionStage(this, "Development"));
+            // var devStage = pipeline.AddApplicationStage(new SolutionStage(this
+            //     , "Development"
+            //     , new Amazon.CDK.StageProps { Env = new Environment { Account = "", Region = "us-east-1" } })
+            // );
+
             // devStage.AddActions(new ShellScriptAction(new ShellScriptActionProps {
             //     ActionName = "Test Lamabda Function",
             //     Commands = new[] {
