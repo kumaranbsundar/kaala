@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using Amazon.CDK;
-using Amazon.CDK.Pipelines;
+using Amazon.CDK.AWS.CodeBuild;
 using Amazon.CDK.AWS.CodePipeline;
 using Amazon.CDK.AWS.CodePipeline.Actions;
-using Amazon.CDK.AWS.CodeBuild;
+using Amazon.CDK.AWS.IAM;
+using Amazon.CDK.AWS.KMS;
+using Amazon.CDK.AWS.S3;
 
 namespace TimesheetApiInfra
 {
@@ -10,45 +13,119 @@ namespace TimesheetApiInfra
     {
         internal PipelineStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
-            var sourceArtifact = new Artifact_();
-            var cloudAssemblyArtifact = new Artifact_();
+            var encryptionKey = Key.FromKeyArn(this, "encryptionKey"
+                , "arn:aws:kms:us-east-1:055117415094:key/4ff28163-6358-46dd-be58-bcfc635bd2b8");
+                
+            var sourceArtifact = Bucket.FromBucketAttributes(this, "sourceArtifact", new BucketAttributes {
+                BucketArn = "arn:aws:s3:::codepipeline-artifacts-055117415094-us-east-1",
+                EncryptionKey = encryptionKey
+            });
+            var pipelineRole = Role.FromRoleArn(this, "pipelineRole"
+                , "arn:aws:iam::055117415094:role/CodePipelineMasterRole");
 
-            var pipeline = new CdkPipeline(this, "TimesheetApiPipeline", new CdkPipelineProps
+            var sourceOutputArtifact = new Artifact_();
+            var cdkBuildOutput = new Artifact_("CdkBuildOutput");
+
+            var cdkBuildProject = new PipelineProject(this, "CDKBuild", new PipelineProjectProps
+            {
+                BuildSpec = BuildSpec.FromObject(new Dictionary<string, object>
+                {
+                    ["version"] = "0.2",
+                    ["phases"] = new Dictionary<string, object>
+                    {
+                        ["install"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = "npm install -g aws-cdk"
+                        },
+                        ["build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = "cd api/timesheet-api/infra && npx cdk synth -o dist"
+                        }
+                    },
+                    ["artifacts"] = new Dictionary<string, object>
+                    {
+                        ["base-directory"] = "api/timesheet-api/infra/dist",
+                        ["files"] = new string[]
+                        {
+                            "*.template.json"
+                        }
+                    }
+                }),
+                Environment = new BuildEnvironment
+                {
+                    BuildImage = LinuxBuildImage.STANDARD_5_0
+                },
+                EncryptionKey = encryptionKey,
+                Role = pipelineRole
+            });
+
+            var pipeline = new Pipeline(this, "TimesheetApiPipeline", new PipelineProps
             {
                 PipelineName = "TimesheetApiPipeline",
-                CloudAssemblyArtifact = cloudAssemblyArtifact,
-                SourceAction = new CodeStarConnectionsSourceAction(new CodeStarConnectionsSourceActionProps
+                ArtifactBucket = sourceArtifact,
+                Role = pipelineRole,
+                Stages = new[]
                 {
-                    ActionName = "Github",
-                    Branch = "main",
-                    Output = sourceArtifact,
-                    Owner = "kumaranbsundar",
-                    Repo = "kaala",
-                    TriggerOnPush = true,
-                    ConnectionArn = "arn:aws:codestar-connections:us-east-1:055117415094:connection/0f659edf-6b6f-4277-9f62-bdcb0ac08d99"
-                }),
-                // SourceAction = new GitHubSourceAction(new GitHubSourceActionProps {
-                //     ActionName = "Github",
-                //     Branch = "main",
-                //     Output = sourceArtifact,
-                //     OauthToken = SecretValue.SecretsManager("GITHUB_TOKEN_NAME"),
-                //     Trigger = GitHubTrigger.POLL,
-                //     Owner = "kumaranbsundar",
-                //     Repo = "kaala"
-                // }),
-                SynthAction = new SimpleSynthAction(new SimpleSynthActionProps
-                {
-                    Environment = new BuildEnvironment
-                    {
-                        BuildImage = LinuxBuildImage.STANDARD_5_0
+                    new Amazon.CDK.AWS.CodePipeline.StageProps {
+                        StageName = "Source",
+                        Actions = new []
+                        {
+                            new CodeStarConnectionsSourceAction(new CodeStarConnectionsSourceActionProps
+                            {
+                                ActionName = "Github",
+                                Branch = "main",
+                                Output = sourceOutputArtifact,
+                                Owner = "kumaranbsundar",
+                                Repo = "kaala",
+                                TriggerOnPush = true,
+                                ConnectionArn = "arn:aws:codestar-connections:us-east-1:055117415094:connection/0f659edf-6b6f-4277-9f62-bdcb0ac08d99",
+                                Role = pipelineRole
+                            })
+                        }
                     },
-                    Subdirectory = "api/timesheet-api/infra",
-                    SourceArtifact = sourceArtifact,
-                    CloudAssemblyArtifact = cloudAssemblyArtifact,
-                    InstallCommands = new[] { "npm install -g aws-cdk" },
-                    SynthCommand = "cdk synth"
-                })
+                    new Amazon.CDK.AWS.CodePipeline.StageProps {
+                        StageName = "Build",
+                        Actions = new []
+                        {
+                            new CodeBuildAction(new CodeBuildActionProps {
+                                ActionName = "CDK_Synth",
+                                Project = cdkBuildProject,
+                                Input = sourceOutputArtifact,
+                                Outputs = new[] {cdkBuildOutput},
+                                Role = pipelineRole
+                            })
+                        }
+                    }
+                }
             });
+
+            // var pipeline = new CdkPipeline(this, "TimesheetApiPipeline", new CdkPipelineProps
+            // {
+            //     PipelineName = "TimesheetApiPipeline",
+            //     CloudAssemblyArtifact = cloudAssemblyArtifact,
+            //     SourceAction = new CodeStarConnectionsSourceAction(new CodeStarConnectionsSourceActionProps
+            //     {
+            //         ActionName = "Github",
+            //         Branch = "main",
+            //         Output = sourceArtifact,
+            //         Owner = "kumaranbsundar",
+            //         Repo = "kaala",
+            //         TriggerOnPush = true,
+            //         ConnectionArn = "arn:aws:codestar-connections:us-east-1:055117415094:connection/0f659edf-6b6f-4277-9f62-bdcb0ac08d99"
+            //     }),
+            //     SynthAction = new SimpleSynthAction(new SimpleSynthActionProps
+            //     {
+            //         Environment = new BuildEnvironment
+            //         {
+            //             BuildImage = LinuxBuildImage.STANDARD_5_0
+            //         },
+            //         Subdirectory = "api/timesheet-api/infra",
+            //         SourceArtifact = sourceArtifact,
+            //         CloudAssemblyArtifact = cloudAssemblyArtifact,
+            //         InstallCommands = new[] { "npm install -g aws-cdk" },
+            //         SynthCommand = "cdk synth"
+            //     })
+            // });
 
             // var devStage = pipeline.AddApplicationStage(new SolutionStage(this
             //     , "Development"
