@@ -15,13 +15,28 @@ namespace TimesheetApiInfra
         {
             var encryptionKey = Key.FromKeyArn(this, "encryptionKey"
                 , "arn:aws:kms:us-east-1:055117415094:key/4ff28163-6358-46dd-be58-bcfc635bd2b8");
-                
-            var sourceArtifact = Bucket.FromBucketAttributes(this, "sourceArtifact", new BucketAttributes {
+
+            var sourceArtifact = Bucket.FromBucketAttributes(this, "sourceArtifact", new BucketAttributes
+            {
                 BucketArn = "arn:aws:s3:::codepipeline-artifacts-055117415094-us-east-1",
                 EncryptionKey = encryptionKey
             });
-            var pipelineRole = Role.FromRoleArn(this, "pipelineRole"
-                , "arn:aws:iam::055117415094:role/CodePipelineMasterRole");
+
+            var pipelineRole = Role.FromRoleArn(this, "pipelineRole", 
+                "arn:aws:iam::055117415094:role/CodePipelineMasterRole",
+                new FromRoleArnOptions { Mutable = false }
+            );
+
+            var devCrossAccountRole = Role.FromRoleArn(this, "crossAccountRole", 
+                "arn:aws:iam::324668897075:role/CodePipelineCrossAccountRole",
+                new FromRoleArnOptions { Mutable = false }
+            );
+
+            var deploymentRole = Role.FromRoleArn(this, "deploymentRole",
+                    "arn:aws:iam::324668897075:role/CodePipelineCfnDeploymentRole",
+                    new FromRoleArnOptions { Mutable = false }
+            );
+
 
             var sourceOutputArtifact = new Artifact_();
             var cdkBuildOutput = new Artifact_("CdkBuildOutput");
@@ -93,6 +108,21 @@ namespace TimesheetApiInfra
                                 Input = sourceOutputArtifact,
                                 Outputs = new[] {cdkBuildOutput},
                                 Role = pipelineRole
+                            })
+                        }
+                    },
+                    new Amazon.CDK.AWS.CodePipeline.StageProps {
+                        StageName = "Deploy_Dev",
+                        Actions = new []
+                        {
+                            new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
+                                ActionName = "Deploy",
+                                TemplatePath = cdkBuildOutput.AtPath("TimesheetApi.template.json"),
+                                StackName = "TimesheetApiDeploymentStack",
+                                AdminPermissions = true,
+                                Role = devCrossAccountRole,
+                                DeploymentRole = deploymentRole,
+                                CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM}
                             })
                         }
                     }
