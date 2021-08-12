@@ -38,6 +38,10 @@ namespace TimesheetApiInfra
                     new FromRoleArnOptions { Mutable = false }
             );
 
+            var devAccountId = "324668897075";
+            var ecrRepoName = "timesheetapi";
+            var ecrImageId = $"{devAccountId}.dkr.ecr.us-east-1.amazonaws.com/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";            
+
             var sourceOutputArtifact = new Artifact_();
             var cdkBuildOutput = new Artifact_("CdkBuildOutput");
 
@@ -74,72 +78,47 @@ namespace TimesheetApiInfra
                 Role = pipelineRole
             });
 
-            // var ecrRepo = new Repository(this, "TimesheetApiRepo", new RepositoryProps
-            // {
-            //     RepositoryName = "timesheetapi"
-            // });
-
-            // ecrRepo.AddToResourcePolicy(new PolicyStatement(new PolicyStatementProps
-            // {
-            //     Effect = Effect.ALLOW,
-            //     Principals = new[] { new AnyPrincipal() },
-            //     Actions = new[] {
-            //         "ecr:BatchCheckLayerAvailability",
-            //         "ecr:BatchGetImage",
-            //         "ecr:DescribeImages",
-            //         "ecr:DescribeRepositories",
-            //         "ecr:GetDownloadUrlForLayer"
-            //     },
-            //     Conditions = new Dictionary<string, object>
-            //     {
-            //         ["ForAnyValue:StringLike"] = new Dictionary<string, object>
-            //         {
-            //             ["aws:PrincipalOrgPaths"] = "o-u6ecwc10h7/*"
-            //         }
-            //     }
-            // }));
-
-            // var containerBuildProject = new PipelineProject(this, "ContainerBuild", new PipelineProjectProps
-            // {
-            //     BuildSpec = BuildSpec.FromObject(new Dictionary<string, object>
-            //     {
-            //         ["version"] = "0.2",
-            //         ["phases"] = new Dictionary<string, object>
-            //         {
-            //             ["pre_build"] = new Dictionary<string, object>
-            //             {
-            //                 ["commands"] = new[] {
-            //                     "echo Logging in to Amazon ECR...",
-            //                     "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 055117415094.dkr.ecr.us-east-1.amazonaws.com"
-            //                 }
-            //             },
-            //             ["build"] = new Dictionary<string, object>
-            //             {
-            //                 ["commands"] = new[] {
-            //                     "echo Build started on `date`",
-            //                     "echo Building the Docker image...",
-            //                     "cd api/timesheet-api/src",
-            //                     $"docker build -t {ecrRepo.RepositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION ."
-            //                 }
-            //             },
-            //             ["post_build"] = new Dictionary<string, object>
-            //             {
-            //                 ["commands"] = new[] {
-            //                     "echo Build completed on `date`",
-            //                     "echo Pushing the Docker image...",
-            //                     $"docker push {ecrRepo.RepositoryUri}:$CODEBUILD_RESOLVED_SOURCE_VERSION"
-            //                 }
-            //             }
-            //         }
-            //     }),
-            //     Environment = new BuildEnvironment
-            //     {
-            //         BuildImage = LinuxBuildImage.STANDARD_5_0,
-            //         Privileged = true
-            //     },
-            //     EncryptionKey = encryptionKey,
-            //     Role = pipelineRole
-            // });            
+            var containerBuildProject = new PipelineProject(this, "ContainerBuild", new PipelineProjectProps
+            {
+                BuildSpec = BuildSpec.FromObject(new Dictionary<string, object>
+                {
+                    ["version"] = "0.2",
+                    ["phases"] = new Dictionary<string, object>
+                    {
+                        ["pre_build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Logging in to Amazon ECR...",
+                                "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 055117415094.dkr.ecr.us-east-1.amazonaws.com"
+                            }
+                        },
+                        ["build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Build started on `date`",
+                                "echo Building the Docker image...",
+                                "cd api/timesheet-api/src",
+                                $"docker build -t {ecrImageId} ."
+                            }
+                        },
+                        ["post_build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Build completed on `date`",
+                                "echo Pushing the Docker image...",
+                                $"docker push {ecrImageId}"
+                            }
+                        }
+                    }
+                }),
+                Environment = new BuildEnvironment
+                {
+                    BuildImage = LinuxBuildImage.STANDARD_5_0,
+                    Privileged = true
+                },
+                EncryptionKey = encryptionKey,
+                Role = pipelineRole
+            });            
 
             var pipeline = new Pipeline(this, "TimesheetApiPipeline", new PipelineProps
             {
@@ -192,13 +171,13 @@ namespace TimesheetApiInfra
                                 CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM},
                                 RunOrder = 1
                             }),                            
-                            // new CodeBuildAction(new CodeBuildActionProps {
-                            //     ActionName = "Lambda_Image_Build",
-                            //     Project = containerBuildProject,
-                            //     Input = sourceOutputArtifact,
-                            //     Role = pipelineRole,
-                            //     RunOrder = 2                                
-                            // }),                            
+                            new CodeBuildAction(new CodeBuildActionProps {
+                                ActionName = "Lambda_Image_Build",
+                                Project = containerBuildProject,
+                                Input = sourceOutputArtifact,
+                                Role = pipelineRole,
+                                RunOrder = 2                                
+                            }),
                             // new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
                             //     ActionName = "Deploy",
                             //     TemplatePath = cdkBuildOutput.AtPath("TimesheetApi.template.json"),
