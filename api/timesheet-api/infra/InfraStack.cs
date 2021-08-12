@@ -2,6 +2,8 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.IAM;
+using Amazon.CDK.AWS.Ecr.Assets;
+using Amazon.CDK.AWS.ECR;
 
 namespace TimesheetApiInfra
 {
@@ -9,8 +11,17 @@ namespace TimesheetApiInfra
     {
         internal TimesheetApiInfraStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
+            // var assets = new DockerImageAsset(this, "LambdaImage", new DockerImageAssetProps {
+            //     Directory = "../src"
+            // });
+
             // Deploy Lambda
-            var dockerImageCode = DockerImageCode.FromImageAsset("../src");
+            //var dockerImageCode = DockerImageCode.FromImageAsset("../src");
+            // var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(this
+            //     , "ecr-image-repository", "timesheetapi"));
+            var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryArn(this
+                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:055117415094:repository/timesheetapi"));            
+
             var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
             {
                 FunctionName = "TimesheetApi",

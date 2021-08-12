@@ -7,6 +7,8 @@ namespace TimesheetApiInfra
         public static void Main(string[] args)
         {
             var app = new App();
+            
+            new EcrStack(app, "TimesheetApiImageRepo");
             new TimesheetApiInfraStack(app, "TimesheetApi");
             new PipelineStack(app, "TimesheetApiPipeline");
 
