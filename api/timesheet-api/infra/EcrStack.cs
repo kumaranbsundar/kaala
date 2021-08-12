@@ -26,7 +26,10 @@ namespace TimesheetApiInfra
                     "ecr:BatchGetImage",
                     "ecr:DescribeImages",
                     "ecr:DescribeRepositories",
-                    "ecr:GetDownloadUrlForLayer"
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:InitiateLayerUpload",
+                    "ecr:PutImage",
+                    "ecr:UploadLayerPart"
                 },
                 Conditions = new Dictionary<string, object>
                 {

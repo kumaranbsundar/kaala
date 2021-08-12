@@ -40,7 +40,9 @@ namespace TimesheetApiInfra
 
             var devAccountId = "324668897075";
             var ecrRepoName = "timesheetapi";
-            var ecrImageId = $"{devAccountId}.dkr.ecr.us-east-1.amazonaws.com/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";            
+            var ecrRegistry = $"{devAccountId}.dkr.ecr.us-east-1.amazonaws.com";
+            var ecrImageId = $"{ecrRegistry}/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";
+            //var ecrImageIdLatest = $"{ecrRegistry}/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";            
 
             var sourceOutputArtifact = new Artifact_();
             var cdkBuildOutput = new Artifact_("CdkBuildOutput");
@@ -89,7 +91,7 @@ namespace TimesheetApiInfra
                         {
                             ["commands"] = new[] {
                                 "echo Logging in to Amazon ECR...",
-                                "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 055117415094.dkr.ecr.us-east-1.amazonaws.com"
+                                $"aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin {ecrRegistry}"
                             }
                         },
                         ["build"] = new Dictionary<string, object>
@@ -157,19 +159,20 @@ namespace TimesheetApiInfra
                             })
                         }
                     },
-                    new Amazon.CDK.AWS.CodePipeline.StageProps {
-                        StageName = "Pipeline_SelfMutate",
-                        Actions = new []
-                        {
-                            new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
-                                ActionName = "SelfMutate",
-                                TemplatePath = cdkBuildOutput.AtPath("TimesheetApiPipeline.template.json"),
-                                StackName = "TimesheetApiPipeline",
-                                AdminPermissions = true,
-                                Role = pipelineRole
-                            })
-                        }
-                    },                    
+                    // new Amazon.CDK.AWS.CodePipeline.StageProps {
+                    //     StageName = "Pipeline_SelfMutate",
+                    //     Actions = new []
+                    //     {
+                    //         new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
+                    //             ActionName = "SelfMutate",
+                    //             TemplatePath = cdkBuildOutput.AtPath("TimesheetApiPipeline.template.json"),
+                    //             StackName = "TimesheetApiPipeline",
+                    //             AdminPermissions = true,
+                    //             Role = pipelineRole,
+                    //             DeploymentRole = pipelineRole
+                    //         })
+                    //     }
+                    // },                    
                     new Amazon.CDK.AWS.CodePipeline.StageProps {
                         StageName = "Deploy_Dev",
                         Actions = new Amazon.CDK.AWS.CodePipeline.Action[]
