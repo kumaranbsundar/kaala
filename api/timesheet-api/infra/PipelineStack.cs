@@ -158,6 +158,19 @@ namespace TimesheetApiInfra
                         }
                     },
                     new Amazon.CDK.AWS.CodePipeline.StageProps {
+                        StageName = "Pipeline_SelfMutate",
+                        Actions = new []
+                        {
+                            new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
+                                ActionName = "SelfMutate",
+                                TemplatePath = cdkBuildOutput.AtPath("TimesheetApiPipeline.template.json"),
+                                StackName = "TimesheetApiPipeline",
+                                AdminPermissions = true,
+                                Role = pipelineRole
+                            })
+                        }
+                    },                    
+                    new Amazon.CDK.AWS.CodePipeline.StageProps {
                         StageName = "Deploy_Dev",
                         Actions = new Amazon.CDK.AWS.CodePipeline.Action[]
                         {
@@ -169,14 +182,14 @@ namespace TimesheetApiInfra
                                 Role = devCrossAccountRole,
                                 DeploymentRole = deploymentRole,
                                 CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM},
-                                RunOrder = 1
+                                RunOrder = 2
                             }),                            
                             new CodeBuildAction(new CodeBuildActionProps {
                                 ActionName = "Lambda_Image_Build",
                                 Project = containerBuildProject,
                                 Input = sourceOutputArtifact,
                                 Role = pipelineRole,
-                                RunOrder = 2                                
+                                RunOrder = 3                                
                             }),
                             // new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
                             //     ActionName = "Deploy",
