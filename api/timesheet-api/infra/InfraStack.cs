@@ -21,7 +21,10 @@ namespace TimesheetApiInfra
             // var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(this
             //     , "ecr-image-repository", "timesheetapi"));
             var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryArn(this
-                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:324668897075:repository/timesheetapi:latest"));            
+                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:324668897075:repository/timesheetapi"), new EcrImageCodeProps
+                {
+                    Tag = "latest"
+                });
 
             var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
             {
@@ -29,7 +32,7 @@ namespace TimesheetApiInfra
                 Code = dockerImageCode,
                 Description = "Timesheet API",
                 Timeout = Duration.Seconds(10),
-            });        
+            });
 
             // DynamoDb Table
             var table = new Table(this, "Timesheet", new TableProps
