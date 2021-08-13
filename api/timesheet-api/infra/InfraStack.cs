@@ -4,6 +4,7 @@ using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.ECR;
+using Amazon.DynamoDBv2;
 
 namespace TimesheetApiInfra
 {
@@ -20,7 +21,7 @@ namespace TimesheetApiInfra
             // var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(this
             //     , "ecr-image-repository", "timesheetapi"));
             var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryArn(this
-                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:055117415094:repository/timesheetapi"));            
+                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:324668897075:repository/timesheetapi:latest"));            
 
             var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
             {
@@ -28,7 +29,7 @@ namespace TimesheetApiInfra
                 Code = dockerImageCode,
                 Description = "Timesheet API",
                 Timeout = Duration.Seconds(10),
-            });
+            });        
 
             // DynamoDb Table
             var table = new Table(this, "Timesheet", new TableProps

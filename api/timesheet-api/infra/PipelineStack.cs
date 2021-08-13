@@ -41,8 +41,7 @@ namespace TimesheetApiInfra
             var devAccountId = "324668897075";
             var ecrRepoName = "timesheetapi";
             var ecrRegistry = $"{devAccountId}.dkr.ecr.us-east-1.amazonaws.com";
-            var ecrImageId = $"{ecrRegistry}/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";
-            //var ecrImageIdLatest = $"{ecrRegistry}/{ecrRepoName}:$CODEBUILD_RESOLVED_SOURCE_VERSION";            
+            var ecrImageId = $"{ecrRegistry}/{ecrRepoName}";
 
             var sourceOutputArtifact = new Artifact_();
             var cdkBuildOutput = new Artifact_("CdkBuildOutput");
@@ -100,7 +99,7 @@ namespace TimesheetApiInfra
                                 "echo Build started on `date`",
                                 "echo Building the Docker image...",
                                 "cd api/timesheet-api/src",
-                                $"docker build -t {ecrImageId} ."
+                                $"docker build -t {ecrImageId}:$CODEBUILD_RESOLVED_SOURCE_VERSION -t {ecrImageId}:latest ."
                             }
                         },
                         ["post_build"] = new Dictionary<string, object>
@@ -108,7 +107,8 @@ namespace TimesheetApiInfra
                             ["commands"] = new[] {
                                 "echo Build completed on `date`",
                                 "echo Pushing the Docker image...",
-                                $"docker push {ecrImageId}"
+                                $"docker push {ecrImageId}:$CODEBUILD_RESOLVED_SOURCE_VERSION",
+                                $"docker push {ecrImageId}:latest"                                
                             }
                         }
                     }
@@ -120,7 +120,7 @@ namespace TimesheetApiInfra
                 },
                 EncryptionKey = encryptionKey,
                 Role = pipelineRole
-            });            
+            });
 
             var pipeline = new Pipeline(this, "TimesheetApiPipeline", new PipelineProps
             {
@@ -185,25 +185,25 @@ namespace TimesheetApiInfra
                                 Role = devCrossAccountRole,
                                 DeploymentRole = deploymentRole,
                                 CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM},
-                                RunOrder = 2
-                            }),                            
+                                RunOrder = 1
+                            }),
                             new CodeBuildAction(new CodeBuildActionProps {
                                 ActionName = "Lambda_Image_Build",
                                 Project = containerBuildProject,
                                 Input = sourceOutputArtifact,
                                 Role = pipelineRole,
-                                RunOrder = 3                                
+                                RunOrder = 2
                             }),
-                            // new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
-                            //     ActionName = "Deploy",
-                            //     TemplatePath = cdkBuildOutput.AtPath("TimesheetApi.template.json"),
-                            //     StackName = "TimesheetApiDeploymentStack",
-                            //     AdminPermissions = true,
-                            //     Role = devCrossAccountRole,
-                            //     DeploymentRole = deploymentRole,
-                            //     CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM},
-                            //     RunOrder = 3                                
-                            // })
+                            new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
+                                ActionName = "Deploy",
+                                TemplatePath = cdkBuildOutput.AtPath("TimesheetApi.template.json"),
+                                StackName = "TimesheetApi",
+                                AdminPermissions = true,
+                                Role = devCrossAccountRole,
+                                DeploymentRole = deploymentRole,
+                                CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM },
+                                RunOrder = 3
+                            })
                         }
                     }
                 }

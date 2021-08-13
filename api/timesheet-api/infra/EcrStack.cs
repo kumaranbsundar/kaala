@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace TimesheetApiInfra
 {
     public class EcrStack : Stack
-    {
+    {        
         internal EcrStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
             var ecrRepo = new Repository(this, "TimesheetApiRepo", new RepositoryProps
