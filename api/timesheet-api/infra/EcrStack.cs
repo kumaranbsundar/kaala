@@ -29,7 +29,8 @@ namespace TimesheetApiInfra
                     "ecr:GetDownloadUrlForLayer",
                     "ecr:InitiateLayerUpload",
                     "ecr:PutImage",
-                    "ecr:UploadLayerPart"
+                    "ecr:UploadLayerPart",
+                    "ecr:CompleteLayerUpload"
                 },
                 Conditions = new Dictionary<string, object>
                 {
