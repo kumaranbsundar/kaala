@@ -1,0 +1,105 @@
+{
+  "version": "12.0.0",
+  "artifacts": {
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "TimesheetApiPipelineStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "TimesheetApiPipelineStack.template.json",
+        "validateOnSynth": false
+      },
+      "metadata": {
+        "/TimesheetApiPipelineStack/CDKBuild/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKBuild7F70D971",
+            "trace": [
+              "new Project (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/aws-codebuild/lib/project.js:352:26)",
+              "new PipelineProject (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/aws-codebuild/lib/pipeline-project.js:19:9)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:8154:58",
+              "Kernel._wrapSandboxCode (/tmp/ekdnxrti.i2t/lib/program.js:8582:24)",
+              "Kernel._create (/tmp/ekdnxrti.i2t/lib/program.js:8154:34)",
+              "Kernel.create (/tmp/ekdnxrti.i2t/lib/program.js:7895:29)",
+              "KernelHost.processRequest (/tmp/ekdnxrti.i2t/lib/program.js:9479:36)",
+              "KernelHost.run (/tmp/ekdnxrti.i2t/lib/program.js:9442:22)",
+              "Immediate._onImmediate (/tmp/ekdnxrti.i2t/lib/program.js:9443:46)",
+              "processImmediate (node:internal/timers:464:21)"
+            ]
+          }
+        ],
+        "/TimesheetApiPipelineStack/TimesheetApiPipeline/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "TimesheetApiPipelineCEFFE32E",
+            "trace": [
+              "new Pipeline (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/aws-codepipeline/lib/pipeline.js:213:30)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:8154:58",
+              "Kernel._wrapSandboxCode (/tmp/ekdnxrti.i2t/lib/program.js:8582:24)",
+              "Kernel._create (/tmp/ekdnxrti.i2t/lib/program.js:8154:34)",
+              "Kernel.create (/tmp/ekdnxrti.i2t/lib/program.js:7895:29)",
+              "KernelHost.processRequest (/tmp/ekdnxrti.i2t/lib/program.js:9479:36)",
+              "KernelHost.run (/tmp/ekdnxrti.i2t/lib/program.js:9442:22)",
+              "Immediate._onImmediate (/tmp/ekdnxrti.i2t/lib/program.js:9443:46)",
+              "processImmediate (node:internal/timers:464:21)"
+            ]
+          }
+        ],
+        "/TimesheetApiPipelineStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata",
+            "trace": [
+              "new MetadataResource (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/metadata-resource.js:22:30)",
+              "/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:139:9",
+              "visit (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:200:9)",
+              "visit (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:197:9)",
+              "injectMetadataResources (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:128:5)",
+              "Object.synthesize (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:17:5)",
+              "App.synth (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/stage.js:100:41)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:7970:134",
+              "Kernel._wrapSandboxCode (/tmp/ekdnxrti.i2t/lib/program.js:8582:24)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:7970:107",
+              "Kernel._ensureSync (/tmp/ekdnxrti.i2t/lib/program.js:8563:28)",
+              "Kernel.invoke (/tmp/ekdnxrti.i2t/lib/program.js:7970:34)",
+              "KernelHost.processRequest (/tmp/ekdnxrti.i2t/lib/program.js:9479:36)",
+              "KernelHost.run (/tmp/ekdnxrti.i2t/lib/program.js:9442:22)",
+              "Immediate._onImmediate (/tmp/ekdnxrti.i2t/lib/program.js:9443:46)",
+              "processImmediate (node:internal/timers:464:21)"
+            ]
+          }
+        ],
+        "/TimesheetApiPipelineStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable",
+            "trace": [
+              "new MetadataResource (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/metadata-resource.js:30:35)",
+              "/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:139:9",
+              "visit (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:200:9)",
+              "visit (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:197:9)",
+              "injectMetadataResources (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:128:5)",
+              "Object.synthesize (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/private/synthesis.js:17:5)",
+              "App.synth (/tmp/jsii-kernel-2z4Ht7/node_modules/@aws-cdk/core/lib/stage.js:100:41)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:7970:134",
+              "Kernel._wrapSandboxCode (/tmp/ekdnxrti.i2t/lib/program.js:8582:24)",
+              "/tmp/ekdnxrti.i2t/lib/program.js:7970:107",
+              "Kernel._ensureSync (/tmp/ekdnxrti.i2t/lib/program.js:8563:28)",
+              "Kernel.invoke (/tmp/ekdnxrti.i2t/lib/program.js:7970:34)",
+              "KernelHost.processRequest (/tmp/ekdnxrti.i2t/lib/program.js:9479:36)",
+              "KernelHost.run (/tmp/ekdnxrti.i2t/lib/program.js:9442:22)",
+              "Immediate._onImmediate (/tmp/ekdnxrti.i2t/lib/program.js:9443:46)",
+              "processImmediate (node:internal/timers:464:21)"
+            ]
+          }
+        ]
+      },
+      "displayName": "TimesheetApiPipelineStack"
+    }
+  }
+}
