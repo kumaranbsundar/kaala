@@ -92,7 +92,10 @@ namespace ApiPipeline
                     stackProps,
                     cdkBuildOutput,
                     crossAccountRole,
-                    deploymentRole
+                    deploymentRole,
+                    pipelineRole,
+                    sourceOutputArtifact,
+                    GetContainerBuildProject(encryptionKey, pipelineRole)
                 ));
             });
         }
@@ -133,14 +136,67 @@ namespace ApiPipeline
             });
         }
 
+        private PipelineProject GetContainerBuildProject(IKey encryptionKey, IRole pipelineRole)
+        {
+            return new PipelineProject(this, "ContainerBuild", new PipelineProjectProps
+            {
+                BuildSpec = BuildSpec.FromObject(new Dictionary<string, object>
+                {
+                    ["version"] = "0.2",
+                    ["phases"] = new Dictionary<string, object>
+                    {
+                        ["pre_build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Logging in to Amazon ECR...",
+                                "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
+                            }
+                        },
+                        ["build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Build started on `date`",
+                                "echo Building the Docker image...",
+                                "cd api/timesheet-api/src",
+                                "docker build -t $ECR_IMAGE:$CODEBUILD_RESOLVED_SOURCE_VERSION -t $ECR_IMAGE:latest ."
+                            }
+                        },
+                        ["post_build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new[] {
+                                "echo Build completed on `date`",
+                                "echo Pushing the Docker image...",
+                                $"docker push $ECR_IMAGE:$CODEBUILD_RESOLVED_SOURCE_VERSION",
+                                $"docker push $ECR_IMAGE:latest"
+                            }
+                        }
+                    }
+                }),
+                Environment = new BuildEnvironment
+                {
+                    BuildImage = LinuxBuildImage.STANDARD_5_0,
+                    Privileged = true
+                },
+                EncryptionKey = encryptionKey,
+                Role = pipelineRole
+            });
+        }
+
         private Amazon.CDK.AWS.CodePipeline.IStageOptions GetPipelineStage(
             DeploymentEnvironment deployEnv,
             PipelineStackProps stackProps,
             Artifact_ cdkBuildOutput,
             IRole crossAccountRole,
-            IRole deploymentRole)
+            IRole deploymentRole,
+            IRole pipelineRole,
+            Artifact_ sourceOutputArtifact,
+            PipelineProject containerBuildProject)
         {
-            var ecrRepoName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-ecrrepo";
+            var ecrStackName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-ecrrepo";
+            var ecrRepoName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-repo";
+            var ecrRegistry = $"{deployEnv.AccountId}.dkr.ecr.us-east-1.amazonaws.com";
+            var ecrImageId = $"{ecrRegistry}/{ecrRepoName}";
+            var infraStackName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-infra";
 
             return new Amazon.CDK.AWS.CodePipeline.StageOptions
             {
@@ -149,14 +205,39 @@ namespace ApiPipeline
                 {
                     new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
                         ActionName = "Create_ECR",
-                        TemplatePath = cdkBuildOutput.AtPath($"{ecrRepoName}.template.json"),
-                        StackName = ecrRepoName,
+                        TemplatePath = cdkBuildOutput.AtPath($"{ecrStackName}.template.json"),
+                        StackName = ecrStackName,
                         AdminPermissions = true,
                         Role = crossAccountRole,
                         DeploymentRole = deploymentRole,
                         CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM},
                         RunOrder = 1
-                    })
+                    }),
+                    new CodeBuildAction(new CodeBuildActionProps {
+                        ActionName = "Lambda_Image_Build",
+                        Project = containerBuildProject,
+                        Input = sourceOutputArtifact,
+                        Role = pipelineRole,
+                        EnvironmentVariables = new Dictionary<string, IBuildEnvironmentVariable> {{
+                            "ECR_REGISTRY", new BuildEnvironmentVariable {
+                                Type = BuildEnvironmentVariableType.PLAINTEXT,
+                                Value = ecrRegistry }},{
+                            "ECR_IMAGE", new BuildEnvironmentVariable {
+                                Type = BuildEnvironmentVariableType.PLAINTEXT,
+                                Value = ecrImageId }}
+                        },
+                        RunOrder = 2
+                    }),
+                    new CloudFormationCreateUpdateStackAction(new CloudFormationCreateUpdateStackActionProps {
+                        ActionName = "Deploy",
+                        TemplatePath = cdkBuildOutput.AtPath($"{infraStackName}.template.json"),
+                        StackName = infraStackName,
+                        AdminPermissions = true,
+                        Role = crossAccountRole,
+                        DeploymentRole = deploymentRole,
+                        CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM },
+                        RunOrder = 3
+                    })                    
                 }
             };
         }
