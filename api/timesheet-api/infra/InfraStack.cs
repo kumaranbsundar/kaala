@@ -2,15 +2,15 @@ using Amazon.CDK;
 using Amazon.CDK.AWS.Lambda;
 using Amazon.CDK.AWS.DynamoDB;
 using Amazon.CDK.AWS.IAM;
-using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.ECR;
-using Amazon.DynamoDBv2;
+using TimesheetApiInfra.Props;
 
 namespace TimesheetApiInfra
 {
-    public class TimesheetApiInfraStack : Stack
+
+    public class InfraStack : Stack
     {
-        internal TimesheetApiInfraStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
+        internal InfraStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
             // var assets = new DockerImageAsset(this, "LambdaImage", new DockerImageAssetProps {
             //     Directory = "../src"
@@ -20,11 +20,16 @@ namespace TimesheetApiInfra
             //var dockerImageCode = DockerImageCode.FromImageAsset("../src");
             // var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(this
             //     , "ecr-image-repository", "timesheetapi"));
-            var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryArn(this
-                , "timesheetapi-repo", "arn:aws:ecr:us-east-1:324668897075:repository/timesheetapi"), new EcrImageCodeProps
-                {
-                    Tag = "latest"
-                });
+
+            var stackProps = props as InfraStackProps;
+
+            var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(
+                this,
+                stackProps.EcrRepoName,
+                stackProps.EcrRepoName
+            ));
+            //  $"arn:aws:ecr:{this.Region}:{stackProps.AccountId}:repository/{stackProps.EcrRepoName}"),
+            // new EcrImageCodeProps { Tag = "latest" });
 
             var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
             {

@@ -5,16 +5,20 @@ using Amazon.CDK.AWS.IAM;
 using Amazon.CDK.AWS.Ecr.Assets;
 using Amazon.CDK.AWS.ECR;
 using System.Collections.Generic;
+using TimesheetApiInfra.Props;
 
 namespace TimesheetApiInfra
 {
+
     public class EcrStack : Stack
-    {        
+    {
         internal EcrStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
-            var ecrRepo = new Repository(this, "TimesheetApiRepo", new RepositoryProps
+            var stackProps = props as EcrStackProps;
+
+            var ecrRepo = new Repository(this, stackProps.EcrRepoName, new RepositoryProps
             {
-                RepositoryName = "timesheetapi"
+                RepositoryName = stackProps.EcrRepoName
             });
 
             ecrRepo.AddToResourcePolicy(new PolicyStatement(new PolicyStatementProps
@@ -36,10 +40,10 @@ namespace TimesheetApiInfra
                 {
                     ["ForAnyValue:StringLike"] = new Dictionary<string, object>
                     {
-                        ["aws:PrincipalOrgPaths"] = "o-u6ecwc10h7/*"
+                        ["aws:PrincipalOrgPaths"] = $"{stackProps.OrganizationId}/*"
                     }
                 }
-            }));                        
+            }));
         }
     }
 }
