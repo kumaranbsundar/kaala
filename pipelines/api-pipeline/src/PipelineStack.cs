@@ -140,7 +140,7 @@ namespace ApiPipeline
             IRole crossAccountRole,
             IRole deploymentRole)
         {
-            var ecrRepoName = $"{stackProps.ApiName}api-ecrrepo-{deployEnv.EnvironmentName}";
+            var ecrRepoName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-ecrrepo";
 
             return new Amazon.CDK.AWS.CodePipeline.StageOptions
             {
