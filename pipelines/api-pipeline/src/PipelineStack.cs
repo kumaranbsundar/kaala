@@ -32,12 +32,26 @@ namespace ApiPipeline
             var sourceOutputArtifact = new Artifact_();
             var cdkBuildOutput = new Artifact_("CdkBuildOutput");
 
+            var apiName = new CfnParameter(this, "ApiName", new CfnParameterProps
+            {                
+                Type = "String",
+                Description = "The name of the API"
+            });
+
+            var apiNameLower = new CfnParameter(this, "ApiNameLower", new CfnParameterProps
+            {                
+                Type = "String",
+                Description = "The name of the API in Lowercase"
+            });            
+
             //
             // Create the pipeline
             //
-            var pipeline = new Pipeline(this, $"{stackProps.ApiName}ApiPipeline", new PipelineProps
+            //var pipeline = new Pipeline(this, $"{stackProps.ApiName}ApiPipeline", new PipelineProps
+            var pipeline = new Pipeline(this, $"ApiPipeline", new PipelineProps            
             {
-                PipelineName = $"{stackProps.ApiName}ApiPipeline",
+                PipelineName = $"{apiName.ValueAsString}ApiPipeline",                
+                //PipelineName = $"{stackProps.ApiName}ApiPipeline",
                 ArtifactBucket = sourceArtifact,
                 Role = pipelineRole,
                 Stages = new[]
@@ -55,7 +69,8 @@ namespace ApiPipeline
                                 Repo = stackProps.RepoName,
                                 TriggerOnPush = true,
                                 ConnectionArn = codestarArn,
-                                Role = pipelineRole
+                                Role = pipelineRole,
+                                VariablesNamespace = "SourceVariables"
                             })
                         }
                     },
@@ -65,10 +80,15 @@ namespace ApiPipeline
                         {
                             new CodeBuildAction(new CodeBuildActionProps {
                                 ActionName = "CDK_Synth",
-                                Project = GetCdkBuildProject(encryptionKey, pipelineRole, stackProps),
+                                Project = GetCdkBuildProject(encryptionKey, pipelineRole),
                                 Input = sourceOutputArtifact,
                                 Outputs = new[] {cdkBuildOutput},
-                                Role = pipelineRole
+                                Role = pipelineRole,
+                                EnvironmentVariables = new Dictionary<string, IBuildEnvironmentVariable> {{
+                                    "API_NAME", new BuildEnvironmentVariable {
+                                        Type = BuildEnvironmentVariableType.PLAINTEXT,
+                                        Value = apiNameLower.ValueAsString }}
+                                }
                             })
                         }
                     }
@@ -89,7 +109,7 @@ namespace ApiPipeline
 
                 pipeline.AddStage(GetPipelineStage(
                     de,
-                    stackProps,
+                    apiNameLower.ValueAsString,
                     cdkBuildOutput,
                     crossAccountRole,
                     deploymentRole,
@@ -100,7 +120,7 @@ namespace ApiPipeline
             });
         }
 
-        private PipelineProject GetCdkBuildProject(IKey encryptionKey, IRole pipelineRole, PipelineStackProps stackProps)
+        private PipelineProject GetCdkBuildProject(IKey encryptionKey, IRole pipelineRole)
         {
             return new PipelineProject(this, "CDKBuild", new PipelineProjectProps
             {
@@ -115,12 +135,12 @@ namespace ApiPipeline
                         },
                         ["build"] = new Dictionary<string, object>
                         {
-                            ["commands"] = $"cd api/{stackProps.ApiName.ToLower()}-api/infra && npx cdk synth -o dist"
+                            ["commands"] = "cd api/$API_NAME-api/infra && npx cdk synth -o dist"
                         }
                     },
                     ["artifacts"] = new Dictionary<string, object>
                     {
-                        ["base-directory"] = $"api/{stackProps.ApiName.ToLower()}-api/infra/dist",
+                        ["base-directory"] = $"api/$API_NAME-api/infra/dist",
                         ["files"] = new string[]
                         {
                             "*.template.json"
@@ -184,7 +204,7 @@ namespace ApiPipeline
 
         private Amazon.CDK.AWS.CodePipeline.IStageOptions GetPipelineStage(
             DeploymentEnvironment deployEnv,
-            PipelineStackProps stackProps,
+            string apiName,
             Artifact_ cdkBuildOutput,
             IRole crossAccountRole,
             IRole deploymentRole,
@@ -192,11 +212,11 @@ namespace ApiPipeline
             Artifact_ sourceOutputArtifact,
             PipelineProject containerBuildProject)
         {
-            var ecrStackName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-ecrrepo";
-            var ecrRepoName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-repo";
+            var ecrStackName = $"{apiName}api-{deployEnv.EnvironmentName}-ecrrepo";            
+            var ecrRepoName = $"{apiName}api-{deployEnv.EnvironmentName}-repo";
             var ecrRegistry = $"{deployEnv.AccountId}.dkr.ecr.us-east-1.amazonaws.com";
             var ecrImageId = $"{ecrRegistry}/{ecrRepoName}";
-            var infraStackName = $"{stackProps.ApiName.ToLower()}api-{deployEnv.EnvironmentName}-infra";
+            var infraStackName = $"{apiName}api-{deployEnv.EnvironmentName}-infra";
 
             return new Amazon.CDK.AWS.CodePipeline.StageOptions
             {
@@ -236,6 +256,9 @@ namespace ApiPipeline
                         Role = crossAccountRole,
                         DeploymentRole = deploymentRole,
                         CfnCapabilities = new[] { CfnCapabilities.ANONYMOUS_IAM },
+                        ParameterOverrides = new Dictionary<string, object> {
+                            { "ImageTag", "#{SourceVariables.CommitId}" }
+                        },
                         RunOrder = 3
                     })                    
                 }

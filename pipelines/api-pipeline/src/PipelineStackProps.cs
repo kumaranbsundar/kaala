@@ -8,7 +8,7 @@ namespace ApiPipeline
     {
         public string KMSKeyId { get; set; }
         public string CodeStarConnectionId { get; set; }
-        public string ApiName { get; set; }
+        //public string ApiName { get; set; }
         public string RepoName { get; set; }
         public IList<DeploymentEnvironment> DeployEnvs { get; set; }
     }
