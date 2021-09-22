@@ -37,43 +37,7 @@ namespace TimesheetApiInfra
                 });
             };
 
-            // new EcrStack(app, $"{stackProps.EcrRepoName}-ecr-repo", stackProps);
-            //new TimesheetApiInfraStack(app, $"{stackProps.EcrRepoName}-", stackProps);
-            //new PipelineStack(app, $"{stackProps.EcrRepoName}-pipeline", stackProps);
-
             app.Synth();
         }
     }
-
-    // internal interface IAccountStage
-    // {
-    //     string AccountId { get; set; }
-    //     string EnvName { get; set; }
-    // }
-
-    // internal class AccountStage : IAccountStage
-    // {
-    //     public string AccountId { get; set; }
-    //     public string EnvName { get; set; }
-    // }
-
-    // internal class CrossStackProps : IStackProps
-    // {
-    //     public string OrganizationId { get; set; }
-    //     public string KMSKeyId { get; set; }
-    //     public string EcrRepoName { get; set; }
-    //     public string CodeStarConnectionId { get; set; }
-    //     public IAccountStage[] AllStages { get; set; }
-    //     public IAccountStage Stage { get; set; }
-    // }
-
-    // internal class InputProps
-    // {
-    //     public string OrganizationId { get; set; }
-    //     public string KMSKeyId { get; set; }
-    //     public string EcrRepoName { get; set; }
-    //     public string CodeStarConnectionId { get; set; }
-    //     public IDictionary<string, string> Stages { get; set; }
-    // }
-
 }

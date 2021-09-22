@@ -12,15 +12,6 @@ namespace TimesheetApiInfra
     {
         internal InfraStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {
-            // var assets = new DockerImageAsset(this, "LambdaImage", new DockerImageAssetProps {
-            //     Directory = "../src"
-            // });
-
-            // Deploy Lambda
-            //var dockerImageCode = DockerImageCode.FromImageAsset("../src");
-            // var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(this
-            //     , "ecr-image-repository", "timesheetapi"));
-
             var stackProps = props as InfraStackProps;
 
             var imageTag = new CfnParameter(this, "ImageTag", new CfnParameterProps
@@ -35,9 +26,6 @@ namespace TimesheetApiInfra
                 stackProps.EcrRepoName,
                 stackProps.EcrRepoName
             ), new EcrImageCodeProps { Tag = imageTag.ValueAsString });
-
-            //  $"arn:aws:ecr:{this.Region}:{stackProps.AccountId}:repository/{stackProps.EcrRepoName}"),
-            // new EcrImageCodeProps { Tag = "latest" });
 
             var lambda = new DockerImageFunction(this, "TimesheetApi", new DockerImageFunctionProps
             {
