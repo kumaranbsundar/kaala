@@ -27,7 +27,8 @@ namespace TimesheetApiInfra
                 this,
                 stackProps.EcrRepoName,
                 stackProps.EcrRepoName
-            ));
+            ), new EcrImageCodeProps { Tag = "latest" });
+
             //  $"arn:aws:ecr:{this.Region}:{stackProps.AccountId}:repository/{stackProps.EcrRepoName}"),
             // new EcrImageCodeProps { Tag = "latest" });
 

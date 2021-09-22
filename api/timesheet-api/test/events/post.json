@@ -1,5 +1,5 @@
 {
-    "body": "[{\"Day\": \"2021-07-19\",\"Hours\": 8,\"Description\": \"worked on timesheet app\"}]",
+    "body": "[{\"Day\": \"2021-07-21\",\"Hours\": 18,\"Description\": \"worked on timesheet app\"}]",
     "resource": "/{UserId}/{Id}",
     "path": "/path/to/resource",
     "httpMethod": "POST",
