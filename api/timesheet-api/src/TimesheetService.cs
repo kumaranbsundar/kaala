@@ -36,7 +36,7 @@ namespace TimesheetApi
             {
                 Day = ds.Day,
                 Hours = ds.Hours,
-                Description = "this is the desc " + ds.Description,
+                Description = ds.Description,
                 Id = $"{userId}_{weekId}"
             }));
             
