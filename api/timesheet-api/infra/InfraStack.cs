@@ -23,11 +23,18 @@ namespace TimesheetApiInfra
 
             var stackProps = props as InfraStackProps;
 
+            var imageTag = new CfnParameter(this, "ImageTag", new CfnParameterProps
+            {                
+                Type = "String",
+                Default = "latest",
+                Description = "The tag of the image that needs to be deployed to the lambda"
+            });            
+
             var dockerImageCode = DockerImageCode.FromEcr(Repository.FromRepositoryName(
                 this,
                 stackProps.EcrRepoName,
                 stackProps.EcrRepoName
-            ), new EcrImageCodeProps { Tag = "latest" });
+            ), new EcrImageCodeProps { Tag = imageTag.ValueAsString });
 
             //  $"arn:aws:ecr:{this.Region}:{stackProps.AccountId}:repository/{stackProps.EcrRepoName}"),
             // new EcrImageCodeProps { Tag = "latest" });
