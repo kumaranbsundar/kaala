@@ -361,4 +361,10 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# AWS SAM
 **/.aws-sam/
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+out.txt
