@@ -14,6 +14,7 @@
     <PackageReference Include="Amazon.CDK.AWS.DynamoDB" Version="1.111.0" />
     <PackageReference Include="Amazon.CDK.AWS.Lambda" Version="1.111.0" />
     <PackageReference Include="Amazon.CDK.Pipelines" Version="1.111.0" />
+    <PackageReference Include="ApiInfraStack" Version="1.0.2" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.0.52" />    
 
     <!-- jsii Roslyn analyzers (un-comment to obtain compile-time checks for missing required props
