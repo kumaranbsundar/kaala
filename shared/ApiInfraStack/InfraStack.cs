@@ -6,7 +6,7 @@ using Amazon.CDK.AWS.ECR;
 
 namespace ApiInfraStack
 {
-    public class InfraStack : Stack
+    internal class InfraStack : Stack
     {
         internal InfraStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {

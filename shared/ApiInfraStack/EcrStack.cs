@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace ApiInfraStack
 {
-    public class EcrStack : Stack
+    internal class EcrStack : Stack
     {
         internal EcrStack(Construct scope, string id, IStackProps props = null) : base(scope, id, props)
         {

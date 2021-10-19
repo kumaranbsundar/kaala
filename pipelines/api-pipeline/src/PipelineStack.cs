@@ -47,11 +47,9 @@ namespace ApiPipeline
             //
             // Create the pipeline
             //
-            //var pipeline = new Pipeline(this, $"{stackProps.ApiName}ApiPipeline", new PipelineProps
             var pipeline = new Pipeline(this, $"ApiPipeline", new PipelineProps            
             {
                 PipelineName = $"{apiName.ValueAsString}ApiPipeline",                
-                //PipelineName = $"{stackProps.ApiName}ApiPipeline",
                 ArtifactBucket = sourceArtifact,
                 Role = pipelineRole,
                 Stages = new[]
@@ -131,8 +129,19 @@ namespace ApiPipeline
                     {
                         ["install"] = new Dictionary<string, object>
                         {
-                            ["commands"] = "npm install -g aws-cdk"
+                            ["commands"] = new string[] {
+                                "npm install -g aws-cdk",
+                                "export PATH=\"$PATH:/root/.dotnet/tools\"",
+                                "dotnet tool install -g AWS.CodeArtifact.NuGet.CredentialProvider",
+                                "dotnet codeartifact-creds install"
+                            }
                         },
+                        ["pre_build"] = new Dictionary<string, object>
+                        {
+                            ["commands"] = new string[] {
+                                "dotnet nuget add source -n codeartifact \"$(aws codeartifact get-repository-endpoint --domain eonsos --domain-owner 055117415094 --repository kaala --format nuget --query repositoryEndpoint --output text)\"v3/index.json"
+                            }
+                        },                        
                         ["build"] = new Dictionary<string, object>
                         {
                             ["commands"] = "cd api/$API_NAME-api/infra && npx cdk synth -o dist"
